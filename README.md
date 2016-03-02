@@ -18,7 +18,7 @@ In this repo, you can find an example application named LVMS.FactuurSturenNet.NE
 prompt you for credentials; that's your user name and API key. Or if you run it often, make sure you use the credentials text file.
 	
 	var client = new FactuurSturenClient();
-	await client.LoginAsync(credentials.UserName, credentials.Password);
+	await client.LoginAsync(userName, apiKey);
 
 The password is the API key that you can find under settings in the FactuurSturen.nl website.
 	
