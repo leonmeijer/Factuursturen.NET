@@ -56,8 +56,12 @@
       <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="PCLCrypto, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d4421c8a4786956c, processorArchitecture=MSIL">
-      <HintPath>..\packages\PCLCrypto.1.0.86\lib\net40-Client\PCLCrypto.dll</HintPath>
+    <Reference Include="Polly, Version=0.0.0.0, Culture=neutral, PublicKeyToken=17484f44d54c7d73, processorArchitecture=MSIL">
+      <HintPath>..\packages\LVMS.Polly.Signed.4.0.2\lib\portable-net403+sl50+win+wpa81+wp80+Xamarin.iOS10+MonoAndroid10+MonoTouch10\Polly.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PortableRest, Version=3.1.0.0, Culture=neutral, PublicKeyToken=109c5b6afe0e5188, processorArchitecture=MSIL">
+      <HintPath>..\packages\LVMS.PortableRest.Signed.3.1.4\lib\portable-net403+sl50+win+wpa81+wp80+Xamarin.iOS10+MonoAndroid10+MonoTouch10\PortableRest.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -101,14 +105,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Polly\src\Polly.Pcl\Polly.Pcl.csproj">
-      <Project>{905cf38a-be90-4234-bf15-2fcfd1973a9c}</Project>
-      <Name>Polly.Pcl</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\PortableRest\src\PortableRest\PortableRest.csproj">
-      <Project>{a3546d1a-ce87-49bb-800a-98018c1fca00}</Project>
-      <Name>PortableRest</Name>
-    </ProjectReference>
     <ProjectReference Include="..\LVMS.FactuurSturen.NET\LVMS.FactuurSturen.NET.csproj">
       <Project>{cc983726-6d11-4680-a547-30ded5f5e2bb}</Project>
       <Name>LVMS.FactuurSturen.NET</Name>

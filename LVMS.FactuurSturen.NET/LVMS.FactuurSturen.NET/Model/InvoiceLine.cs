@@ -20,12 +20,12 @@ namespace LVMS.FactuurSturen.Model
         }
 
         public InvoiceLine(double amount, string description, double taxRate, double price) : this(amount, null, description,
-            taxRate, price, null)
+            taxRate, price)
         {
             
         }
 
-        public InvoiceLine(double amount, string amountDesc, string description, double taxRate, double price, double? discountPct)
+        public InvoiceLine(double amount, string amountDesc, string description, double taxRate, double price, double? discountPct = null)
         {
             Amount = amount;
             AmountDesc = amountDesc;

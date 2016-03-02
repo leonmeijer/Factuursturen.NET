@@ -33,12 +33,11 @@ namespace LVMS.FactuurSturen.TestClient
 
             //var invoices = await client.GetInvoices();
 
-            //var client = await client.GetClient("Client name");
-
-            // Create a draft invoice
-            //var invoice = new Invoice(client, InvoiceActions.Send, SendMethods.Email);
-            //var line1 = new InvoiceLine(1, "Testregel", 21, 125);
-            //invoice.AddLine(line1);
+            var to = await client.GetClient("My client name"); // can also be via Id
+            var invoice = new Invoice(to, InvoiceActions.Send, SendMethods.Email);
+            var line1 = new InvoiceLine(1, "Test line", 21, price: 125);
+            invoice.AddLine(line1);
+            await client.CreateInvoice(invoice, true);
             //var products = await client.GetProducts();
 
             //var product = await client.GetProduct(1);
@@ -46,7 +45,7 @@ namespace LVMS.FactuurSturen.TestClient
             //await client.DeleteProduct(product);
 
 
-            var invoice = await client.GetInvoice("20160086");
+            //var invoice = await client.GetInvoice("20160086");
 
         }
 
