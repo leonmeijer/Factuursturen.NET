@@ -21,10 +21,29 @@ prompt you for credentials; that's your user name and API key. Or if you run it 
 
 The password is the API key that you can find under settings in the FactuurSturen.nl website.
 	
-To retrieve a list of clients:	
+To retrieve lists:	
 
 	var clients = await client.GetClients();
+	var products = await client.GetProducts();
+	var invoices = await client.GetInvoices();
+	var overDueInvoices = await client.GetInvoicesWithFilter(InvoiceFilters.Overdue);
+	var profiles = await client.GetProfiles();
 
+To create a draft invoice (to be send later via the web application):	
+
+	var to = await client.GetClient("My client name"); // can also be via Id
+    var invoice = new Invoice(to, InvoiceActions.Save, "draft 1");
+    var line1 = new InvoiceLine(1, "Test line", 21, 125);
+    invoice.AddLine(line1);
+    await client.CreateDraftInvoice(invoice);
+    	
+To create and send an invoice immediately:	
+
+	var to = await client.GetClient("My client name"); // can also be via Id
+    var invoice = new Invoice(to, InvoiceActions.Send, SendMethods.Email);
+    var line1 = new InvoiceLine(1, "hrs", "Consulting", 21, 50);
+    invoice.AddLine(line1);
+    var createdInvoice = await client.CreateInvoice(invoice, true);
 
 ## Contributions
 
