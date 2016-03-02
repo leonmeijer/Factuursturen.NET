@@ -41,7 +41,7 @@ To create and send an invoice immediately:
 
 	var to = await client.GetClient("My client name"); // can also be via Id
     var invoice = new Invoice(to, InvoiceActions.Send, SendMethods.Email);
-    var line1 = new InvoiceLine(1, "hrs", "Consulting", 21, 50);
+    var line1 = new InvoiceLine(1, "hrs", "Consulting", 21, 50); // variation with amount description
     invoice.AddLine(line1);
     var createdInvoice = await client.CreateInvoice(invoice, true);
 
