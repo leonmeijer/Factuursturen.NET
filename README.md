@@ -55,7 +55,7 @@ To create and send an invoice immediately:
 To get a tax rate:	
 
 	var tax = await client.GetTaxType(TaxRates.H);
-            var taxRate = tax.Percentage;
+    var taxRate = tax.Percentage;
 
 ## Contributions
 
