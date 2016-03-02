@@ -88,20 +88,29 @@ namespace LVMS.FactuurSturen
 
         public async Task DeleteProduct(Product product, bool updateInCache = true)
         {
-            var request = new RestRequest($"products/{product.Id}", HttpMethod.Delete, ContentTypes.Json)
+            if (product == null)
+                throw new ArgumentNullException(nameof(product));
+            var clientNr = product.Id;
+            await DeleteProduct(clientNr, updateInCache);
+
+            if (updateInCache)
+            {
+                RemoveFromCache(product);
+            }
+        }
+
+        public async Task DeleteProduct(int productId, bool updateInCache = true)
+        {
+            var request = new RestRequest($"products/{productId}", HttpMethod.Delete, ContentTypes.Json)
             {
                 ContentType = ContentTypes.Json,
             };
 
             var response = await _httpClient.SendWithPolicyAsync<string>(this, request);
-            if (response.HttpResponseMessage.IsSuccessStatusCode)
+            if (!response.HttpResponseMessage.IsSuccessStatusCode)
             {
-                if (updateInCache)
-                {
-                    RemoveFromCache(product);
-                }
+                throw new RequestFailedLibException(response.HttpResponseMessage.StatusCode);
             }
-            throw new RequestFailedLibException(response.HttpResponseMessage.StatusCode);
         }
 
         private void StoreInCache(Product product)

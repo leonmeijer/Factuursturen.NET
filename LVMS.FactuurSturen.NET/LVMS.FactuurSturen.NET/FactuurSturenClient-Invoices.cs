@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using LVMS.FactuurSturen.Exceptions;
 using LVMS.FactuurSturen.Model;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PortableRest;
 
 namespace LVMS.FactuurSturen
@@ -70,15 +72,27 @@ namespace LVMS.FactuurSturen
             return result;
         }
 
+        /// <summary>
+        /// Return a specific invoice
+        /// </summary>
+        /// <param name="invoiceNr">Invoice number</param>
+        /// <param name="allowCache">Whether or not to look it up/store it in cache</param>
+        /// <returns></returns>
         public async Task<Invoice> GetInvoice(string invoiceNr, bool allowCache = true)
         {
-            if (allowCache && _cachedInvoices != null && _cachedInvoices.Any(p=>p.Id == invoiceNr))
-                return _cachedInvoices.FirstOrDefault(p=>p.Id == invoiceNr);
+            if (allowCache && _cachedInvoices != null && _cachedInvoices.Any(p=>p.InvoiceNr == invoiceNr))
+                return _cachedInvoices.FirstOrDefault(p=>p.InvoiceNr == invoiceNr);
 
             var request = new RestRequest($"invoices/{invoiceNr}", HttpMethod.Get, ContentTypes.Json);
             
+            var json = await _httpClient.ExecuteWithPolicyAsync<string>(this, request);
 
-            var result = await _httpClient.ExecuteWithPolicyAsync<Invoice>(this, request);
+            // FactuurSturen.nl doesn't just return the Invoice. They return JSON with a root element.
+            var jsonObject = JObject.Parse(json);
+            var root = jsonObject?.First;
+            if (root == null) return null;
+            var invoiceElement = root.First;
+            var result = JsonConvert.DeserializeObject<Invoice>(invoiceElement.ToString());
             if (result != null && allowCache)
             {
                 StoreInCache(result);
@@ -86,82 +100,145 @@ namespace LVMS.FactuurSturen
             return result;
         }
 
-        public async Task<Invoice> CreateInvoice(Invoice invoice, bool storeInCache = true)
+        /// <summary>
+        /// Creates an invoice. Do not call this method if you want to create a draft invoice.
+        /// </summary>
+        /// <param name="invoice">The invoice to create</param>
+        /// <param name="returnReloadedInvoice">Whether or not to fetch updated invoice data</param>
+        /// <param name="storeReloadedVersionInCache"></param>
+        /// <returns>An updated Invoice record (retrieved from the server) when returnReloadedInvoice is True, else Null. </returns>
+        public async Task<Invoice> CreateInvoice(Invoice invoice, bool returnReloadedInvoice, bool storeReloadedVersionInCache = true)
         {
-            var request = new RestRequest("invoices", HttpMethod.Post, ContentTypes.Json)
+            var request = new RestRequest("invoices/", HttpMethod.Post, ContentTypes.Json)
             {
                 ContentType = ContentTypes.Json
             };
 
+            if (invoice.Action == InvoiceActions.Save)
+                throw new FactuurSturenValidationLibException("The Action cannot be 'Save' when calling this method. Call CreateDraftInvoice instead.");
 
-            request.AddParameter(new[] { invoice});
-            var response = await _httpClient.SendWithPolicyAsync<object>(this, request);
+            ValidateInvoice(invoice);
+
+            request.AddParameter(invoice);
+            var response = await _httpClient.SendWithPolicyAsync<string>(this, request);
             if (response.HttpResponseMessage.IsSuccessStatusCode)
             {
-                //invoice.Id = Convert.ToInt32(response.Content);
-                if (storeInCache)
+                invoice.InvoiceNr = response.Content;
+                if (returnReloadedInvoice)
                 {
-                    StoreInCache(invoice);
+                    invoice = await GetInvoice(response.Content, storeReloadedVersionInCache);
+                    return invoice;
                 }
-                return invoice;
+                else
+                {
+                    return null;
+                }
             }
             throw new RequestFailedLibException(response.HttpResponseMessage.StatusCode);
         }
 
-        public async Task<Invoice> UpdateInvoice(Invoice invoice, bool storeInCache = true)
+        /// <summary>
+        /// Creates an invoice and save is as a draft. This invoice cannot be retrieved via GetInvoices and cannot
+        /// be send later on. To send a draft invoice, you must go to the web application.
+        /// </summary>
+        /// <param name="invoice"></param>
+        /// <returns></returns>
+        public async Task CreateDraftInvoice(Invoice invoice)
         {
-            var request = new RestRequest($"Invoices/{invoice.Id}", HttpMethod.Put, ContentTypes.Json)
+            var request = new RestRequest("invoices/", HttpMethod.Post, ContentTypes.Json)
             {
-                ContentType = ContentTypes.Json,
+                ContentType = ContentTypes.Json
             };
 
-            request.AddParameter(new[] { invoice });
+            if (invoice.Action != InvoiceActions.Save)
+                throw new FactuurSturenValidationLibException("The Action must be set to Save when calling this method.");
+
+            ValidateInvoice(invoice);
+
+            request.AddParameter(invoice);
             var response = await _httpClient.SendWithPolicyAsync<string>(this, request);
-            if (response.HttpResponseMessage.IsSuccessStatusCode)
+            if (!response.HttpResponseMessage.IsSuccessStatusCode)
             {
-                if (storeInCache)
-                {
-                    StoreInCache(invoice);
-                }
-                return invoice;
+                throw new RequestFailedLibException(response.HttpResponseMessage.StatusCode);
             }
-            throw new RequestFailedLibException(response.HttpResponseMessage.StatusCode);
+        }
+
+        private static void ValidateInvoice(Invoice invoice)
+        {
+            if (invoice.Action == InvoiceActions.None)
+                throw new FactuurSturenValidationLibException("When creating an invoice, the action must be set.");
+            if (invoice.Action == InvoiceActions.Send && invoice.SendMethod == SendMethods.None)
+                throw new FactuurSturenValidationLibException("When the invoice action is Send, the SendMethod must be set.");
+            if ((invoice.Action == InvoiceActions.Save || invoice.Action == InvoiceActions.Repeat) &&
+                string.IsNullOrWhiteSpace(invoice.SaveName))
+                throw new FactuurSturenValidationLibException("When the action is 'save' or 'repeat' you must supply a SaveName.");
+            if (invoice.Action == InvoiceActions.Repeat)
+            {
+                if (!invoice.InitialDate.HasValue)
+                    throw new FactuurSturenValidationLibException(
+                        "Because the action is 'repeat', InitialDate must be set. Is the date when the first invoice must be sent");
+                if (!invoice.FinalSendDate.HasValue)
+                    throw new FactuurSturenValidationLibException(
+                        "Because the action is 'repeat', FinalSendDate must be set. Is the date when the last invoice must be sent. After this date the recurring invoice entry is deleted");
+                if (invoice.Frequency == Frequencies.None)
+                    throw new FactuurSturenValidationLibException(
+                        "Because the action is 'repeat', the Frequency must be set. Is the frequency when the invoice must be sent. Based on the InitialDate.");
+                if (invoice.RepeatType == RepeatTypes.None)
+                    throw new FactuurSturenValidationLibException(
+                        "Because the action is 'repeat', the RepeatType must be set. Set if the recurring invoice is automatically sent by our system");
+            }
         }
 
         public async Task DeleteInvoice(Invoice invoice, bool updateInCache = true)
         {
-            var request = new RestRequest($"invoices/{invoice.Id}", HttpMethod.Delete, ContentTypes.Json)
+            if (invoice == null)
+                throw new ArgumentNullException(nameof(invoice));
+            var invoiceNr = invoice.InvoiceNr;
+            await DeleteInvoice(invoiceNr, updateInCache);
+            if (updateInCache)
+            {
+                RemoveFromCache(invoice);
+            }
+        }
+
+        public async Task DeleteInvoice(string invoiceNr, bool updateInCache = true)
+        {
+            var request = new RestRequest($"invoices/{invoiceNr}", HttpMethod.Delete, ContentTypes.Json)
             {
                 ContentType = ContentTypes.Json,
             };
 
             var response = await _httpClient.SendWithPolicyAsync<string>(this, request);
-            if (response.HttpResponseMessage.IsSuccessStatusCode)
+            if (!response.HttpResponseMessage.IsSuccessStatusCode)
             {
-                if (updateInCache)
-                {
-                    RemoveFromCache(invoice);
-                }
+                throw new RequestFailedLibException(response.HttpResponseMessage.StatusCode);
             }
-            throw new RequestFailedLibException(response.HttpResponseMessage.StatusCode);
         }
 
-        private void StoreInCache(Invoice Invoice)
+        private void StoreInCache(Invoice invoice)
         {
             if (_cachedInvoices == null)
                 _cachedInvoices = new List<Invoice>();
-            _cachedInvoices.Add(Invoice);
+            _cachedInvoices.Add(invoice);
         }
 
-        private void RemoveFromCache(Invoice Invoice)
+        private void RemoveFromCache(Invoice invoice)
         {
-            if (Invoice == null)
-                throw new ArgumentNullException(nameof(Invoice));
+            if (invoice == null)
+                throw new ArgumentNullException(nameof(invoice));
 
+            var invoiceId = invoice.Id;
+            RemoveFromCache(invoiceId);
+        }
+
+        private void RemoveFromCache(string invoiceId)
+        {
+            if (_cachedInvoices == null)
+                return;
             lock (_cachedInvoices)
             {
-                if (_cachedInvoices != null && _cachedInvoices.Any(p => p.Id == Invoice.Id))
-                    _cachedInvoices.Remove(_cachedInvoices.First(p => p.Id == Invoice.Id));
+                if (_cachedInvoices != null && _cachedInvoices.Any(p => p.Id == invoiceId))
+                    _cachedInvoices.Remove(_cachedInvoices.First(p => p.Id == invoiceId));
             }
         }
     }

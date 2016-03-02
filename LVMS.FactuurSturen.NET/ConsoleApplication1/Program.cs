@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using LVMS.FactuurSturen.Model;
 using LVMS.FactuurSturen.TestClient.Properties;
 
 namespace LVMS.FactuurSturen.TestClient
@@ -30,14 +31,22 @@ namespace LVMS.FactuurSturen.TestClient
             await client.LoginAsync(credentials.UserName, credentials.Password);
             Console.WriteLine("Connected.");
 
-            //var clients = await client.GetClients();
+            //var invoices = await client.GetInvoices();
+
+            //var client = await client.GetClient("Client name");
+
+            // Create a draft invoice
+            //var invoice = new Invoice(client, InvoiceActions.Send, SendMethods.Email);
+            //var line1 = new InvoiceLine(1, "Testregel", 21, 125);
+            //invoice.AddLine(line1);
             //var products = await client.GetProducts();
 
             //var product = await client.GetProduct(1);
             //var retval = await client.CreateProduct(product);
             //await client.DeleteProduct(product);
 
-            var invoices = await client.GetInvoicesWithFilter(InvoiceFilters.Paid);
+
+            var invoice = await client.GetInvoice("20160086");
 
         }
 
@@ -71,9 +80,10 @@ namespace LVMS.FactuurSturen.TestClient
         private static NetworkCredential GetCredentialsViaPrompt()
         {
             Console.WriteLine("Please enter your FactuurSturen.nl credentials.");
+            Console.WriteLine("Note: You can store your credentials in a file, so that you don't have to type them in.");
             Console.Write("User name: ");
             string username = Console.ReadLine();
-            Console.Write("Password: ");
+            Console.Write("API Key: ");
             string password = ReadPassword();
             Console.WriteLine();
 

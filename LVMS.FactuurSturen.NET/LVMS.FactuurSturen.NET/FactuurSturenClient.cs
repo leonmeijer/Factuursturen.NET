@@ -5,9 +5,9 @@ using LVMS.FactuurSturen.Exceptions;
 using LVMS.FactuurSturen.Interfaces;
 using LVMS.FactuurSturen.Model;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using PortableRest;
 using PortableRest.Authentication;
+using Newtonsoft.Json.Converters;
 
 namespace LVMS.FactuurSturen
 {
@@ -54,7 +54,12 @@ namespace LVMS.FactuurSturen
                 BaseUrl = ApiUrl,
                 Authenticator = new BasicAuthenticator(userName, apiKey)
             };
-            var jsonSerializerSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+            var jsonSerializerSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new LowerCaseContractResolver(),
+                NullValueHandling = NullValueHandling.Ignore,
+            };
+            
             _httpClient.JsonSerializerSettings = jsonSerializerSettings;
 
             //var loginInfo = new Login() {Username = userName, Password = apiKey};

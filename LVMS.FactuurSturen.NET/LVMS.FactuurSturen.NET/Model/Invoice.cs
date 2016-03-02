@@ -11,7 +11,9 @@ namespace LVMS.FactuurSturen.Model
         [JsonProperty("invoicenr_full")]
         public string InvoiceNrFull { get; set; }
         /// <summary>
-        /// Invoice number including layout
+        /// Invoice number including layout. When posting an invoice, do not specify or define this attribute.
+        /// If you really want to define the invoice number, please include the invoice number as an integer 
+        /// number without any prefix layout. So to create INVOICE00023, please send us 23 as integer.  
         /// </summary>
         public string InvoiceNr { get; set; }
         /// <summary>
@@ -26,7 +28,7 @@ namespace LVMS.FactuurSturen.Model
         /// <summary>
         /// The ID of the used profile. Default is default profile
         /// </summary>
-        public int Profile { get; set; }
+        public int? Profile { get; set; }
         /// <summary>
         /// The type of discount. 'amount' or 'percentage'
         /// </summary>
@@ -35,7 +37,7 @@ namespace LVMS.FactuurSturen.Model
         /// If 'DiscountType' is amount, then this is the amount of discount set on the invoice. 
         /// If 'DiscountType' is set to 'percentage', this is the discount percentage set.
         /// </summary>
-        public double Discount { get; set; }
+        public double? Discount { get; set; }
         /// <summary>
         /// The payment condition set on the invoice. Default is the payment condition set in the application.
         /// </summary>
@@ -56,11 +58,20 @@ namespace LVMS.FactuurSturen.Model
         /// <summary>
         /// Invoice total including taxes
         /// </summary>
-        public double Totalintax { get; set; }
+        public double TotalIntax { get; set; }
         /// <summary>
         /// Client number
         /// </summary>
         public int ClientNr { get; set; }
+
+        [JsonIgnore]
+        public Client Client
+        {
+            set {
+                ClientNr = value?.ClientNr ?? 0;
+            }
+        }
+
         public string Company { get; set; }
         public string Contact { get; set; }
         public string Address { get; set; }
@@ -122,14 +133,14 @@ namespace LVMS.FactuurSturen.Model
         /// <summary>
         /// Define the action what to do when this is a new invoice request
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public InvoiceAction Action { get; set; }
+        [JsonConverter(typeof(LowerCaseStringEnumConverter))]
+        public InvoiceActions Action { get; set; }
 
         /// <summary>
         /// How to send the invoice to the receiver. Required when you use the action 'send'
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public SendMethod SendMethod { get; set; }
+        [JsonConverter(typeof(LowerCaseStringEnumConverter))]
+        public SendMethods SendMethod { get; set; }
 
         /// <summary>
         /// When the action is 'save' or 'repeat' you must supply a savename.We'll save the invoice under that name.
@@ -163,77 +174,60 @@ namespace LVMS.FactuurSturen.Model
         /// <summary>
         /// The frequency when the invoice must be sent. Based on the initialdate.
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public Frequency Frequency { get; set; }
+        [JsonConverter(typeof(LowerCaseStringEnumConverter))]
+        public Frequencies Frequency { get; set; }
 
         /// <summary>
         /// Set if the recurring invoice is automatically sent by our system
         /// </summary>
         [JsonConverter(typeof(StringEnumConverter))]
-        public RepeatType RepeatType { get; set; }
+        public RepeatTypes RepeatType { get; set; }
 
         #endregion
         #endregion
-    }
 
-    public enum InvoiceAction
-    {
-        None,
-        /// <summary>
-        /// Send the invoice
-        /// </summary>
-        Send,
-        /// <summary>
-        /// Save the invoice as a draft
-        /// </summary>
-        Save,
-        /// <summary>
-        /// Plan a recurring invoice
-        /// </summary>
-        Repeat
-    }
+        public Invoice()
+        {
+            
+        }
 
-    public enum SendMethod
-    {
-        None,
-        /// <summary>
-        /// Print the invoices yourself. We'll send you the invoice number so you can execute a command to retrieve the PDF if you need so 
-        ///  </summary>
-        Mail,
-        /// <summary>
-        ///  Send invoices through e-mail. It will be sent immediately
-        /// </summary>
-        Email,
-        /// <summary>
-        /// Send invoice through the printcenter.
-        /// </summary>
-        Printcenter
-    }
 
-    
-    public enum Frequency
-    {
-        None,
-        Weekly,
-        Monthly,
-        Quarterly,
-        HalfYearly,
-        Yearly,
-        BiWeekly,
-        BiMonthly,
-        FourWeekly
-    }
+        /// <summary>
+        /// Initializes a new Invoice instance. Can be used to create an invoice.
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="action"></param>
+        /// <param name="saveName">Required when Action is Save or Repeat</param>
+        public Invoice(Client client, InvoiceActions action, string saveName = null) : this()
+        {
+            Client = client;
+            Action = action;
+            SaveName = saveName;
+        }
 
-    public enum RepeatType
-    {
-        None,
         /// <summary>
-        /// Send automatically when due
+        /// Initializes a new Invoice instance. Can be used to create an invoice.
         /// </summary>
-        Auto,
-        /// <summary>
-        /// Do not send automatically
-        /// </summary>
-        Manual
+        /// <param name="client"></param>
+        /// <param name="action"></param>
+        /// <param name="saveName">Required when Action is Save or Repeat</param>
+        public Invoice(Client client, InvoiceActions action, SendMethods sendMethod) : this(client, action, null)
+        {
+            SendMethod = sendMethod;
+        }
+
+        public virtual void AddLine(InvoiceLine line)
+        {
+            if (Lines == null)
+                Lines = new Dictionary<string, InvoiceLine>();
+
+            Lines.Add("line" + Lines.Count+1, line);
+        }
+
+        public virtual void AddLines(IEnumerable<InvoiceLine> lines)
+        {
+            foreach (var line in lines)
+                AddLine(line);
+        }
     }
 }
