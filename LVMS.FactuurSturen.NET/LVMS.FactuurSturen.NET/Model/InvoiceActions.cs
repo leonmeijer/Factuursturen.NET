@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace LVMS.FactuurSturen.Model
+﻿namespace LVMS.FactuurSturen.Model
 {
     public enum InvoiceActions
     {

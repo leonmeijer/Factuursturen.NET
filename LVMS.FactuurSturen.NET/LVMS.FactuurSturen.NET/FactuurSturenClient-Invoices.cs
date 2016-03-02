@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using LVMS.FactuurSturen.Exceptions;
 using LVMS.FactuurSturen.Model;
@@ -12,60 +11,45 @@ using PortableRest;
 
 namespace LVMS.FactuurSturen
 {
-    public enum InvoiceFilters
-    {
-        /// <summary>
-        /// Get open invoice (all invoices that are not fully paid yet)
-        /// </summary>
-        Open,
-        /// <summary>
-        /// Get overdue invoices
-        /// </summary>
-        Overdue,
-        /// <summary>
-        /// Get sent invoices
-        /// </summary>
-        Sent,
-        /// <summary>
-        /// Get party paid invoices
-        /// </summary>
-        Partly,
-        /// <summary>
-        /// Get invoices with too much paid
-        /// </summary>
-        TooMuch,
-        /// <summary>
-        /// Get paid invoices
-        /// </summary>
-        Paid,
-        /// <summary>
-        /// Get invoices that couldn't be collected
-        /// </summary>
-        Uncollectible
-    }
-
     public partial class FactuurSturenClient
     {
-        private List<Invoice> _cachedInvoices;
+        private readonly List<Invoice> _cachedInvoices = new List<Invoice>();
+        private const string ResourceInvoices = "invoices";
 
-        public async Task<Invoice[]> GetInvoices(bool allowCache = true)
+        /// <summary>
+        /// Returns a list of sent invoices.
+        /// </summary>
+        /// <param name="allowCache"></param>
+        /// <returns></returns>
+        public async Task<Invoice[]> GetInvoices(bool? allowCache = true)
         {
-            if (allowCache && _cachedInvoices != null)
-                return _cachedInvoices.ToArray();
+            return await GetInvoicesInternal(ResourceInvoices, allowCache, _cachedInvoices);
+        }
 
-            var request = new RestRequest("invoices", HttpMethod.Get, ContentTypes.Json);
+        private async Task<Invoice[]> GetInvoicesInternal(string resource, bool? allowCache, List<Invoice> cacheList)
+        {
+            if (!allowCache.HasValue)
+                allowCache = _allowResponseCaching;
+            if ((bool) allowCache && cacheList != null && cacheList.Count > 0)
+                return cacheList.ToArray();
+
+            var request = new RestRequest(resource, HttpMethod.Get, ContentTypes.Json);
 
             var result = await _httpClient.ExecuteWithPolicyAsync<Invoice[]>(this, request);
 
-            if (allowCache || _cachedInvoices != null)
-                _cachedInvoices = new List<Invoice>(result);
+            if ((bool) allowCache)
+                cacheList?.AddRange(result);
             return result;
         }
 
+        /// <summary>
+        /// Returns a list of sent invoices. Filter by an invoice filter.
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
         public async Task<Invoice[]> GetInvoicesWithFilter(InvoiceFilters filter)
         {
-
-            var request = new RestRequest("invoices", HttpMethod.Get, ContentTypes.Json);
+            var request = new RestRequest(ResourceInvoices, HttpMethod.Get, ContentTypes.Json);
             request.AddQueryString("filter", Enum.GetName(typeof(InvoiceFilters), filter).ToLowerInvariant());
 
             var result = await _httpClient.ExecuteWithPolicyAsync<Invoice[]>(this, request);
@@ -73,29 +57,38 @@ namespace LVMS.FactuurSturen
         }
 
         /// <summary>
-        /// Return a specific invoice
+        /// Return a specific sent invoice.
         /// </summary>
         /// <param name="invoiceNr">Invoice number</param>
         /// <param name="allowCache">Whether or not to look it up/store it in cache</param>
         /// <returns></returns>
-        public async Task<Invoice> GetInvoice(string invoiceNr, bool allowCache = true)
+        public async Task<Invoice> GetInvoice(string invoiceNr, bool? allowCache = true)
         {
-            if (allowCache && _cachedInvoices != null && _cachedInvoices.Any(p=>p.InvoiceNr == invoiceNr))
-                return _cachedInvoices.FirstOrDefault(p=>p.InvoiceNr == invoiceNr);
+            return await GetInvoiceInternal(ResourceInvoices, invoiceNr, allowCache, _cachedInvoices);
+        }
 
-            var request = new RestRequest($"invoices/{invoiceNr}", HttpMethod.Get, ContentTypes.Json);
-            
+        private async Task<Invoice> GetInvoiceInternal(string resource, string invoiceNr, bool? allowCache, List<Invoice> cacheList)
+        {
+            if (!allowCache.HasValue)
+                allowCache = _allowResponseCaching;
+
+            if ((bool) allowCache && _cachedInvoices != null && _cachedInvoices.Any(p => p.InvoiceNr == invoiceNr))
+                return _cachedInvoices.FirstOrDefault(p => p.InvoiceNr == invoiceNr);
+
+            var request = new RestRequest($"{resource}/{invoiceNr}", HttpMethod.Get, ContentTypes.Json);
+
             var json = await _httpClient.ExecuteWithPolicyAsync<string>(this, request);
 
-            // FactuurSturen.nl doesn't just return the Invoice. They return JSON with a root element.
+            // FactuurSturen.nl doesn't just return the Invoice. They return JSON with a root element
+            // and inside is the Invoice data, so a trick is needed here.
             var jsonObject = JObject.Parse(json);
             var root = jsonObject?.First;
             if (root == null) return null;
             var invoiceElement = root.First;
             var result = JsonConvert.DeserializeObject<Invoice>(invoiceElement.ToString());
-            if (result != null && allowCache)
+            if (result != null && (bool) allowCache)
             {
-                StoreInCache(result);
+                StoreInvoiceInCache(result, cacheList);
             }
             return result;
         }
@@ -107,9 +100,9 @@ namespace LVMS.FactuurSturen
         /// <param name="returnReloadedInvoice">Whether or not to fetch updated invoice data</param>
         /// <param name="storeReloadedVersionInCache"></param>
         /// <returns>An updated Invoice record (retrieved from the server) when returnReloadedInvoice is True, else Null. </returns>
-        public async Task<Invoice> CreateInvoice(Invoice invoice, bool returnReloadedInvoice, bool storeReloadedVersionInCache = true)
+        public async Task<Invoice> CreateInvoice(Invoice invoice, bool returnReloadedInvoice, bool? storeReloadedVersionInCache = true)
         {
-            var request = new RestRequest("invoices/", HttpMethod.Post, ContentTypes.Json)
+            var request = new RestRequest($"{ResourceInvoices}/", HttpMethod.Post, ContentTypes.Json)
             {
                 ContentType = ContentTypes.Json
             };
@@ -145,7 +138,7 @@ namespace LVMS.FactuurSturen
         /// <returns></returns>
         public async Task CreateDraftInvoice(Invoice invoice)
         {
-            var request = new RestRequest("invoices/", HttpMethod.Post, ContentTypes.Json)
+            var request = new RestRequest($"{ResourceInvoices}/", HttpMethod.Post, ContentTypes.Json)
             {
                 ContentType = ContentTypes.Json
             };
@@ -189,21 +182,22 @@ namespace LVMS.FactuurSturen
             }
         }
 
-        public async Task DeleteInvoice(Invoice invoice, bool updateInCache = true)
+        public async Task DeleteInvoice(Invoice invoice)
         {
             if (invoice == null)
                 throw new ArgumentNullException(nameof(invoice));
             var invoiceNr = invoice.InvoiceNr;
-            await DeleteInvoice(invoiceNr, updateInCache);
-            if (updateInCache)
-            {
-                RemoveFromCache(invoice);
-            }
+            await DeleteInvoice(invoiceNr);
         }
 
-        public async Task DeleteInvoice(string invoiceNr, bool updateInCache = true)
+        public async Task DeleteInvoice(string invoiceNr)
         {
-            var request = new RestRequest($"invoices/{invoiceNr}", HttpMethod.Delete, ContentTypes.Json)
+            await DeleteInvoiceInternal(ResourceInvoices, invoiceNr, _cachedInvoices);
+        }
+
+        private async Task DeleteInvoiceInternal(string resource, string invoiceNr, List<Invoice> cacheList)
+        {
+            var request = new RestRequest($"{resource}/{invoiceNr}", HttpMethod.Delete, ContentTypes.Json)
             {
                 ContentType = ContentTypes.Json,
             };
@@ -213,32 +207,23 @@ namespace LVMS.FactuurSturen
             {
                 throw new RequestFailedLibException(response.HttpResponseMessage.StatusCode);
             }
+
+            RemoveInvoiceFromCache(invoiceNr, cacheList);
         }
 
-        private void StoreInCache(Invoice invoice)
+        private void StoreInvoiceInCache(Invoice invoice, ICollection<Invoice> cacheList)
         {
-            if (_cachedInvoices == null)
-                _cachedInvoices = new List<Invoice>();
-            _cachedInvoices.Add(invoice);
+            cacheList?.Add(invoice);
         }
 
-        private void RemoveFromCache(Invoice invoice)
+        private void RemoveInvoiceFromCache(string invoiceId, List<Invoice> cacheList)
         {
-            if (invoice == null)
-                throw new ArgumentNullException(nameof(invoice));
-
-            var invoiceId = invoice.Id;
-            RemoveFromCache(invoiceId);
-        }
-
-        private void RemoveFromCache(string invoiceId)
-        {
-            if (_cachedInvoices == null)
+            if (cacheList == null)
                 return;
-            lock (_cachedInvoices)
+            lock (cacheList)
             {
-                if (_cachedInvoices != null && _cachedInvoices.Any(p => p.Id == invoiceId))
-                    _cachedInvoices.Remove(_cachedInvoices.First(p => p.Id == invoiceId));
+                if (cacheList.Any(p => p.Id == invoiceId))
+                    cacheList.Remove(cacheList.First(p => p.Id == invoiceId));
             }
         }
     }

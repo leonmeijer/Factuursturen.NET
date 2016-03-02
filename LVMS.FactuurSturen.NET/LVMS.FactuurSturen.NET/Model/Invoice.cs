@@ -46,6 +46,11 @@ namespace LVMS.FactuurSturen.Model
         /// Term of payment in days.Default is the payment period set with the client.
         /// </summary>
         public int PaymentPeriod { get; set; }
+
+        /// <summary>
+        /// The date the invoice was saved
+        /// </summary>
+        public DateTime? DateSaved { get; set; }
         /// <summary>
         /// If invoice is an automatic collection
         /// </summary>
@@ -165,6 +170,12 @@ namespace LVMS.FactuurSturen.Model
         /// Date when the first invoice must be sent. Please use YYYY-MM-DD
         /// </summary>
         public DateTime? InitialDate { get; set; }
+
+        /// <summary>
+        /// The next date when the next invoice is going to be sent.
+        /// </summary>
+        public DateTime? NextSendDate { get; set; }
+        
 
         /// <summary>
         /// Date when the last invoice must be sent. After this date the recurring invoice entry is deleted.

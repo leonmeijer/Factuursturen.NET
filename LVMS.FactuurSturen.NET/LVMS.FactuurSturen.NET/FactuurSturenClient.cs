@@ -7,7 +7,6 @@ using LVMS.FactuurSturen.Model;
 using Newtonsoft.Json;
 using PortableRest;
 using PortableRest.Authentication;
-using Newtonsoft.Json.Converters;
 
 namespace LVMS.FactuurSturen
 {
@@ -17,6 +16,7 @@ namespace LVMS.FactuurSturen
         private RestClient _httpClient;
         
         private bool _initialized;
+        private bool _allowResponseCaching;
         internal bool UsePollyTransientFaultHandling;
 
 
@@ -25,12 +25,13 @@ namespace LVMS.FactuurSturen
         /// </summary>
         /// <param name="apiUrl">Endpoint address of the FactuurSturen.nl REST API</param>
         /// <param name="usePollyTransientFaultHandling">Whether or not to use transient fault handling</param>
-        public FactuurSturenClient(string apiUrl = null, bool usePollyTransientFaultHandling = true)
+        public FactuurSturenClient(string apiUrl = null, bool usePollyTransientFaultHandling = true, bool allowResponseCaching = true)
         {
             if (apiUrl != null)
                 ApiUrl = apiUrl;
          
             UsePollyTransientFaultHandling = usePollyTransientFaultHandling;
+            _allowResponseCaching = allowResponseCaching;
         }
 
         /// <summary>

@@ -31,7 +31,7 @@ namespace LVMS.FactuurSturen.TestClient
             await client.LoginAsync(credentials.UserName, credentials.Password);
             Console.WriteLine("Connected.");
 
-            //var invoices = await client.GetInvoices();
+            var invoices = await client.GetInvoices();
 
             var to = await client.GetClient("My client name"); // can also be via Id
             var invoice = new Invoice(to, InvoiceActions.Send, SendMethods.Email);
