@@ -1,6 +1,6 @@
 # LVMS.FactuurSturen.NET
 Unofficial open source C# helper library for communication with the [API of FactuurSturen.nl](https://www.factuursturen.nl/docs/api_v1.pdf).
-All calls support the async/await model. Previous responses are cached in-memory by default and overrides are available to force fresh data.
+All calls support the async/await model. Previous API-responses are cached in-memory by default and overrides (optional parameters in the method calls) are available to force fresh data.
 All calls use Polly, a transient fault handling library. If calls fail due to transient errors, they are automatically retried.
 
 This library is under development. Currently supported:
