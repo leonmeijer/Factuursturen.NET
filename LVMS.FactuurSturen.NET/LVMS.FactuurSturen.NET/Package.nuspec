@@ -21,7 +21,7 @@
             <dependency id="Microsoft.Bcl.Async" version="1.0.168" />
             <dependency id="Microsoft.Bcl.Build" version="1.0.21" />
             <dependency id="Microsoft.Net.Http" version="2.2.29" />
-            <dependency id="LVMS.PortableRest.Signed" version="3.1.4" />
+            <dependency id="LVMS.PortableRest.Signed" version="3.1.6" />
             <dependency id="LVMS.Polly.Signed" version="4.0.2" />
           </group>
         </dependencies>

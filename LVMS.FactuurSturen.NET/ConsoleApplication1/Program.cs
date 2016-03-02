@@ -31,11 +31,14 @@ namespace LVMS.FactuurSturen.TestClient
             await client.LoginAsync(credentials.UserName, credentials.Password);
             Console.WriteLine("Connected.");
 
-            var invoices = await client.GetInvoices();
-
+            //var invoices = await client.GetInvoices();
+            var taxes = await client.GetTaxes();
+            var mybytes = await client.GetInvoicePdf("20150003");
+            var tax = await client.GetTaxType(TaxRates.H);
+            var taxRate = tax.Percentage;
             var to = await client.GetClient("My client name"); // can also be via Id
             var invoice = new Invoice(to, InvoiceActions.Send, SendMethods.Email);
-            var line1 = new InvoiceLine(1, "Test line", 21, price: 125);
+            var line1 = new InvoiceLine(1, "Test line", taxRate, price: 125);
             invoice.AddLine(line1);
             await client.CreateInvoice(invoice, true);
             //var products = await client.GetProducts();
