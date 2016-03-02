@@ -52,7 +52,7 @@ To create and send an invoice immediately:
     invoice.AddLine(line1);
     var createdInvoice = await client.CreateInvoice(invoice, true);
     
-To get a tax rate:	
+To get a high (H) tax rate:	
 
 	var tax = await client.GetTaxType(TaxRates.H);
     var taxRate = tax.Percentage;
