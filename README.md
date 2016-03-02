@@ -10,7 +10,7 @@ This library is under development. Currently supported:
 - Create (and send) invoices
 - More to come
 
-This Portable Library is compatible with: (ASP).Net 4.0.3/4.5/4.6, Windows (Phone) 8.1 Universal Apps and Windows Phone 8.1 Silverlight. So you can use this library to automate your building(s) from desktop and web applications or from Windows Universal Apps.
+This Portable Library is compatible with: (ASP).Net Framework 4.0.3/4.5/4.6, Windows (Phone) 8.1 Universal Apps and Windows Phone 8.1 Silverlight. So you can use this library to automate invoicing in desktop, web and mobile apps.
 
 ## How to use?
 Use the source code from this repository or download the NuGet package: [LVMS.FactuurSturenNet.Signed](https://www.nuget.org/packages/LVMS.FactuurSturenNet.Signed/). 
