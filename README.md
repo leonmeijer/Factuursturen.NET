@@ -13,7 +13,7 @@ Supported:
 - Get the PDF version of a sent invoice
 
 To do:
-- Balances, Tax, Country and Search API
+- Payment, Balances, Tax, Country and Search API
 
 This Portable Library is compatible with: (ASP).Net Framework 4.0.3/4.5/4.6, Windows (Phone) 8.1 Universal Apps and Windows Phone 8.1 Silverlight. So you can use this library to automate invoicing in desktop, web and mobile apps.
 
