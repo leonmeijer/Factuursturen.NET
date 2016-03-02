@@ -66,6 +66,7 @@
     <Compile Include="Exceptions\FactuurSturenValidationLibException.cs" />
     <Compile Include="Exceptions\RequestFailedLibException.cs" />
     <Compile Include="Exceptions\FactuurSturenLibException.cs" />
+    <Compile Include="FactuurSturenClient-Taxes.cs" />
     <Compile Include="FactuurSturenClient-RepeatingInvoices.cs" />
     <Compile Include="FactuurSturenClient-SavedInvoices.cs" />
     <Compile Include="FactuurSturenClient-Profiles.cs" />
@@ -89,6 +90,7 @@
     <Compile Include="Model\Reference.cs" />
     <Compile Include="Model\RepeatTypes.cs" />
     <Compile Include="Model\SendMethods.cs" />
+    <Compile Include="Model\Taxes.cs" />
     <Compile Include="Model\TaxItem.cs" />
     <Compile Include="Model\TaxTypes.cs" />
     <Compile Include="TransientExceptionHandler.cs" />
@@ -118,7 +120,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="PortableRest, Version=3.1.0.0, Culture=neutral, PublicKeyToken=109c5b6afe0e5188, processorArchitecture=MSIL">
-      <HintPath>..\packages\LVMS.PortableRest.Signed.3.1.5\lib\portable-net403+sl50+win+wpa81+wp80+Xamarin.iOS10+MonoAndroid10+MonoTouch10\PortableRest.dll</HintPath>
+      <HintPath>..\packages\LVMS.PortableRest.Signed.3.1.6\lib\portable-net403+sl50+win+wpa81+wp80+Xamarin.iOS10+MonoAndroid10+MonoTouch10\PortableRest.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.IO, Version=1.5.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">

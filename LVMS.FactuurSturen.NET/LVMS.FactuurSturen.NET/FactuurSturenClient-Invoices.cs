@@ -67,6 +67,18 @@ namespace LVMS.FactuurSturen
             return await GetInvoiceInternal(ResourceInvoices, invoiceNr, allowCache, _cachedInvoices);
         }
 
+        /// <summary>
+        /// Returns the downloaded PDF version of an invoice.
+        /// </summary>
+        /// <param name="invoiceNr">Invoice number</param>
+        /// <returns></returns>
+        public async Task<byte[]> GetInvoicePdf(string invoiceNr)
+        {
+            var request = new RestRequest($"invoices_pdf/{invoiceNr}", HttpMethod.Get, ContentTypes.ByteArray);
+
+            return await _httpClient.ExecuteWithPolicyAsync<byte[]>(this, request);
+        }
+
         private async Task<Invoice> GetInvoiceInternal(string resource, string invoiceNr, bool? allowCache, List<Invoice> cacheList)
         {
             if (!allowCache.HasValue)
