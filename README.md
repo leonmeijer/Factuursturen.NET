@@ -11,9 +11,10 @@ Supported:
 - Get list of repeating invoices, specific repeating invoices, delete repeating invoice
 - Create (and send) invoices
 - Get the PDF version of a sent invoice
+- Get tax rates
 
 To do:
-- Payment, Balances, Tax, Country and Search API
+- Payment, Balances, Country and Search API
 
 This Portable Library is compatible with: (ASP).Net Framework 4.0.3/4.5/4.6, Windows (Phone) 8.1 Universal Apps and Windows Phone 8.1 Silverlight. So you can use this library to automate invoicing in desktop, web and mobile apps.
 
@@ -50,6 +51,11 @@ To create and send an invoice immediately:
     var line1 = new InvoiceLine(1, "hrs", "Consulting", 21, 100); // variation with amount description
     invoice.AddLine(line1);
     var createdInvoice = await client.CreateInvoice(invoice, true);
+    
+To get a high (H) tax rate:	
+
+	var tax = await client.GetTaxType(TaxRates.H);
+    var taxRate = tax.Percentage;
 
 ## Contributions
 
