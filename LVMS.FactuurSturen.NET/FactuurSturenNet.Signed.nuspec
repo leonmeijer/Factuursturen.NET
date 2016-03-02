@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata minClientVersion="2.8.1">
+        <id>LVMS.FactuurSturenNet.Signed</id>
+        <version>0.0.1-Beta1</version>
+        <title>FactuurSturen</title>
+        <authors>Leon Meijer</authors>
+        <owners>LVM Software</owners>
+        <licenseUrl>http://choosealicense.com/licenses/mit/</licenseUrl>
+        <projectUrl>https://github.com/leonmeijer/FactuurSturen.NET</projectUrl>        
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>A *SIGNED* open source C# helper library for communication with the API of FactuurSturen.nl. It's a Portable Class Library (.NET 4.5, Windows Phone 8.1, Windows Phone Silverlight 8 and Windows 8.x).</description>
+        <releaseNotes>
+  0.1 First release.</releaseNotes>
+        <copyright>Copyright © 2015 LVM Software</copyright>
+        <tags>HttpClient, REST, Portable Class Library, FactuurSturen, Invoice</tags>
+        <dependencies>
+          <group targetFramework=".NETPortable0.0-net45+sl5+wp8+win8+wpa81">
+            <dependency id="Newtonsoft.Json" version="7.0.1" />
+            <dependency id="Microsoft.Bcl" version="1.1.10" />
+            <dependency id="Microsoft.Bcl.Async" version="1.0.168" />
+            <dependency id="Microsoft.Bcl.Build" version="1.0.21" />
+            <dependency id="Microsoft.Net.Http" version="2.2.29" />
+            <dependency id="PCLCrypto" version="1.0.2.15130" />
+            <dependency id="LVMS.PortableRest.Signed" version="3.1.0-Beta1" />
+            <dependency id="Polly-Signed" version="2.2.2" />
+          </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="LVMS.FactuurSturen.NET\bin\Release-Signed\LVMS.FactuurSturenNetLib.dll" target="lib\portable-net45+sl5+wp8+win8+wpa81+MonoTouch1+MonoAndroid1\" />
+        <file src="LVMS.FactuurSturen.NET\bin\Release-Signed\LVMS.FactuurSturenNetLib.pdb" target="lib\portable-net45+sl5+wp8+win8+wpa81+MonoTouch1+MonoAndroid1\" />
+        <file src="LVMS.FactuurSturen.NET\bin\Release-Signed\LVMS.FactuurSturenNetLib.xml" target="lib\portable-net45+sl5+wp8+win8+wpa81+MonoTouch1+MonoAndroid1\" />
+        <file src="LVMS.FactuurSturen.NET\**\*.cs" exclude="**\obj\**\*.*" target="src" />
+    </files>
+</package>
