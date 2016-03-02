@@ -3,12 +3,17 @@ Unofficial open source C# helper library for communication with the [API of Fact
 All calls support the async/await model. Previous API-responses are cached in-memory by default and overrides (optional parameters in the method calls) are available to force fresh data.
 All calls use Polly, a transient fault handling library. If calls fail due to transient errors, they are automatically retried.
 
-This library is under development. Currently supported:
-- Get list of clients
-- Get list of products, create product, update product, delete product
-- Get list of invoices, list of filtered invoices (e.g. paid invoices)
+Supported:
+- Get list of clients, specific client
+- Get list of products, specific product, create product, update product, delete product
+- Get list of invoices, specific invoice, list of filtered invoices (e.g. paid invoices)
+- Get list of saved invoices, specific saved invoice, delete saved invoice
+- Get list of repeating invoices, specific repeating invoices, delete repeating invoice
 - Create (and send) invoices
-- More to come
+- Get the PDF version of a sent invoice
+
+To do:
+- Balances, Tax, Country and Search API
 
 This Portable Library is compatible with: (ASP).Net Framework 4.0.3/4.5/4.6, Windows (Phone) 8.1 Universal Apps and Windows Phone 8.1 Silverlight. So you can use this library to automate invoicing in desktop, web and mobile apps.
 
@@ -17,7 +22,7 @@ Use the source code from this repository or download the NuGet package: [LVMS.Fa
 In this repo, you can find an example application named LVMS.FactuurSturenNet.NET.TestClient (ConsoleApplication1). If you run it, it will
 prompt you for credentials; that's your user name and API key. Or if you run it often, make sure you use the credentials text file.
 	
-	var client = new FactuurSturenClient();
+	var client = new FactuurSturenClient(); // has overload to disable all caching
 	await client.LoginAsync(userName, apiKey);
 
 The password is the API key that you can find under settings in the FactuurSturen.nl website.
