@@ -33,7 +33,7 @@ To create a draft invoice (to be send later via the web application):
 
 	var to = await client.GetClient("My client name"); // can also be via Id
     var invoice = new Invoice(to, InvoiceActions.Save, "draft 1");
-    var line1 = new InvoiceLine(1, "Test line", 21, 125);
+    var line1 = new InvoiceLine(1, "Test line", taxRate: 21, price: 125);
     invoice.AddLine(line1);
     await client.CreateDraftInvoice(invoice);
     	
