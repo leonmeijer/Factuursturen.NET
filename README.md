@@ -7,6 +7,7 @@ This library is under development. Currently supported:
 - Get list of clients
 - Get list of products, create product, update product, delete product
 - Get list of invoices, list of filtered invoices (e.g. paid invoices)
+- Create invoices
 - More to come
 
 This Portable Library is compatible with: (ASP).Net 4.0.3/4.5/4.6, Windows (Phone) 8.1 Universal Apps and Windows Phone 8.1 Silverlight. So you can use this library to automate your building(s) from desktop and web applications or from Windows Universal Apps.
