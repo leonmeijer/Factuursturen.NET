@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using LVMS.FactuurSturen.Exceptions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -239,6 +240,22 @@ namespace LVMS.FactuurSturen.Model
         {
             foreach (var line in lines)
                 AddLine(line);
+        }
+
+        public virtual void AddReferenceLine(string referenceText)
+        {
+            if (Reference == null)
+                Reference = new Reference();
+            if (string.IsNullOrWhiteSpace(Reference.Line1))
+                Reference.Line1 = referenceText;
+            else if (string.IsNullOrWhiteSpace(Reference.Line2))
+                Reference.Line2 = referenceText;
+            else if (string.IsNullOrWhiteSpace(Reference.Line3))
+                Reference.Line3 = referenceText;
+            else
+            {
+                throw new FactuurSturenValidationLibException("All reference lines are filled. Cannot add a new line.");
+            }
         }
     }
 }
